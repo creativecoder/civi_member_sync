@@ -1,11 +1,11 @@
 <div id="icon-edit-pages" class="icon32"></div>
 <div class="wrap">
  <h2 id="add-new-user">Manual Synchronize</h2>
-  <?php if(!$_GET['action']) { ?>
+  <?php if(!isset($_GET['action'])) { ?>
   <table class="form-table">      
       <td>
       <span>Manual Synchronization:</span> <br /> 
-      <?php $sync_confirm_url = get_bloginfo('url')."/wp-admin/admin.php?&action=confirm&page=civi_member_sync/manual_sync.php"; ?>                          
+      <?php $sync_confirm_url = admin_url("/admin.php?&action=confirm&page=civi_member_sync/manual_sync.php"); ?>                          
        <input class="button-primary" type="submit" value="Synchronize CiviMember Membership Types to WordPress Roles now" onclick="window.location.href='<?php echo $sync_confirm_url; ?>'" />
       </td> 
    </tr> 
@@ -15,7 +15,7 @@
 
 
 <?php  
-if($_GET['action'] == 'confirm') {
+if(isset($_GET['action']) && $_GET['action'] == 'confirm') {
     $users = get_users();
 
     require_once('civi.php');
@@ -42,7 +42,12 @@ if($_GET['action'] == 'confirm') {
         
                 $userData = get_userdata( $uid );
                 if(!empty($userData)){
-              	  $currentRole = $userData->roles[0];
+              	  foreach ( $userData->roles as $role ) {
+                    if ( $role ) {
+                      $currentRole = $role;
+                      break;
+                    }
+                  }
                 }
                 //checking membership status and assign role
                 $check = member_check($cid,$uid, $currentRole);     

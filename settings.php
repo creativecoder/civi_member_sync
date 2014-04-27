@@ -35,8 +35,10 @@ jQuery(function() {
         <?php  if(isset($_GET['q'])) $title = "EDIT ASSOCIATION RULE"; else  $title = "ADD ASSOCIATION RULE";   ?>  
         <h2 id="add-new-user"><?php echo $title;?></h2>
         <p>Choose a CiviMember Membership Type and a Wordpress Role below. This will associate that Membership with the Role. If you would like the have the same Membership be associated with more than one role, you will need to add a second association rule after you have completed this one.</p>
-        <form method="POST" id="theform" > 
-           <span class="error"><?php echo $nameErr;?></span>
+        <form method="POST" id="theform" >
+          <?php if ( isset($nameErr) ) : ?>
+            <span class="error"><?php echo $nameErr;?></span>
+          <?php endif; ?>
             <table class="form-table">  
                <tr class="form-field form-required">  
                     <th scope="row">  
@@ -49,7 +51,7 @@ jQuery(function() {
                          <option value=""></option>                                               
                          <?php                        
                          foreach( $MembershipType as $key => $value) { ?>                                                    
-                         <option value=<?php echo $key; if( $key == $civi_member_type) { ?> selected="selected" <?php } ?>> <?php echo $value; ?></option>                 <?php } ?>
+                         <option value=<?php echo $key; if( isset($civi_member_type) && $key == $civi_member_type) { ?> selected="selected" <?php } ?>> <?php echo $value; ?></option>                 <?php } ?>
                          </select>
                     </td>  
                 </tr>
@@ -65,7 +67,7 @@ jQuery(function() {
                         <?php global $wp_roles;
                               $roles = $wp_roles->get_names();                       
                          foreach( $roles as $key => $value) { ?>                                                    
-                         <option value=<?php echo $value; if( $value == $wp_role) { ?> selected="selected" <?php } ?>> <?php echo $value; ?></option>
+                         <option value=<?php echo $value; if( isset($wp_role) && $value == $wp_role) { ?> selected="selected" <?php } ?>> <?php echo $value; ?></option>
                          <?php } ?>
                          </select>
                     </td>  
@@ -110,7 +112,7 @@ jQuery(function() {
                         <?php global $wp_roles;
                               $roles = $wp_roles->get_names();                       
                          foreach( $roles as $key => $value) { ?>                                                    
-                         <option value=<?php echo $value; if( $value ==  $expired_wp_role) { ?> selected="selected" <?php } ?>> <?php echo $value; ?></option>
+                         <option value=<?php echo $value; if( isset($expired_wp_role) && $value ==  $expired_wp_role) { ?> selected="selected" <?php } ?>> <?php echo $value; ?></option>
                          <?php } ?>
                          </select>
                     </td>  
@@ -144,7 +146,7 @@ if ($_POST) {
     if(!empty($_POST['current'])){
         foreach($_POST['current'] as $key => $value){
            if(!empty($_POST['expire']))
-           $sameType .= array_search($key, $_POST['expire']);
+           $sameType = array_search($key, $_POST['expire']);
         }   
         $current_rule = serialize($_POST['current']);   
     } else{
@@ -160,7 +162,7 @@ if ($_POST) {
         $table_name = $wpdb->prefix . "civi_member_sync";    
         $insert = $wpdb->get_results( "REPLACE INTO  $table_name SET `wp_role`='$wp_role', `civi_mem_type`=$civi_member_type, `current_rule`='$current_rule',`expiry_rule`='$expiry_rule', `expire_wp_role`='$expired_wp_role'" );  
         
-       $location = get_bloginfo('url')."/wp-admin/options-general.php?page=civi_member_sync/list.php";
+       $location = admin_url("/options-general.php?page=civi_member_sync/list.php");
         echo "<meta http-equiv='refresh' content='0;url=$location' />";exit;
     }else{
         if(!empty($sameType)){  

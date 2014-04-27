@@ -5,7 +5,7 @@
     Plugin URI: https://tadpole.cc
     Description: Plugin to syncronize members in CiviCRM with WordPress
     Author: Jag Kandasamy and Tadpole Collective
-    Version: 1.0
+    Version: 0.1
     Author URI: https://tadpole.cc
 
     Based on CiviMember Role Synchronize by Jag Kandasamy of http://www.orangecreative.net.  This has been
@@ -35,7 +35,7 @@ function tadms_install() {
 
    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
    dbDelta($sql);    
-   add_option("tadms_db_version", $tadms_db_version);    
+   add_option("jal_db_version", $jal_db_version);    
 }    
     
 register_activation_hook(__FILE__,'tadms_install');    
@@ -141,15 +141,18 @@ function member_check($contactID,$currentUserID, $current_user_role) {
 	  $memDetails=civicrm_api("Membership","get", array ('version' => '3','page' =>'CiviCRM', 'q' =>'civicrm/ajax/rest', 'sequential' =>'1','contact_id' =>$contactID));
     //print_r($memDetails); echo "\n";
     if (!empty($memDetails['values'])) {
-		  foreach($memDetails['values'] as $key => $value){
+      foreach($memDetails['values'] as $key => $value){
 		      $memStatusID = $value['status_id']; 
-		      $membershipTypeID = $value['membership_type_id'];  
+		      $membershipTypeID = $value['membership_type_id'];
+
 		  }         
 	  }
       
     //fetching member sync association rule to the corsponding membership type 
     $table_name = $wpdb->prefix . "civi_member_sync";
-	  $memSyncRulesDetails = $wpdb->get_results("SELECT * FROM $table_name WHERE `civi_mem_type`='$membershipTypeID'"); 
+	  if ( isset($membershipTypeID) ) {
+      $memSyncRulesDetails = $wpdb->get_results("SELECT * FROM $table_name WHERE `civi_mem_type`='$membershipTypeID'");
+    }
     //print_r($memSyncRulesDetails);
 	  if(!empty($memSyncRulesDetails)) {
 	    $current_rule =  unserialize($memSyncRulesDetails[0]->current_rule);
